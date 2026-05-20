@@ -26,7 +26,7 @@
 
 ## Контроль изменений
 
-- last_checked_commit: будет обновлён после коммита
+- last_checked_commit: `ff608d7`
 - Последний проверенный git commit до инициализации Memory Bank: `f1e7235`.
 
 ## Changelog
