@@ -25,9 +25,10 @@
 
 ## Контроль изменений
 
-- last_checked_commit: 2026-05-20
+- last_checked_commit: `cfbe2f5`
 - Последний проверенный git commit до инициализации Memory Bank: `f1e7235`.
 - Сравнение `git log f1e7235.. --oneline` перед правками: новых коммитов не было.
+- Memory Bank и `docs/README.md` синхронизированы с коммитом `cfbe2f5`.
 
 ## Changelog
 
@@ -39,3 +40,4 @@
 - Добавлен `docs/README.md` с архитектурным обзором.
 - В `memory_bank/projectbrief.md` добавлен обязательный раздел `## Project Deliverables`.
 - Выполнена арифметическая самопроверка Weight: сумма равна 100.
+- Обновлён `last_checked_commit` после коммита инициализации Memory Bank.
