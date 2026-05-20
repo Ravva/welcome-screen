@@ -13,6 +13,7 @@
 - Создан `docs/README.md` как источник архитектурной правды.
 - Создан `Project Deliverables` с суммой Weight ровно 100.
 - Создана HTML-инструкция `docs/server-setup.html` с кнопками копирования команд.
+- Добавлена поддержка USB/встроенной камеры (V4L2) как альтернативы IP-камере (RTSP).
 
 ## Known Issues / Open Questions
 
@@ -41,3 +42,4 @@
 - Выполнена арифметическая самопроверка Weight: сумма равна 100.
 - Обновлён `last_checked_commit` после коммита инициализации Memory Bank.
 - Создана HTML-инструкция `docs/server-setup.html` с копированием команд одним кликом.
+- Добавлен режим V4L2 для USB/встроенной камеры. Обновлены PRD, README, server-setup.html.

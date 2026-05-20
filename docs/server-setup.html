@@ -211,7 +211,11 @@
 <div class="header">
   <div class="container">
     <h1>🔐 Welcome Screen — настройка серверной части</h1>
-    <p>Пошаговая инструкция для Ubuntu Server 22.04 / 24.04 LTS</p>
+    <p>Поддерживается два типа видеоисточников:</p>
+<ul>
+  <li><strong>IP-камера по RTSP</strong> — целевой вариант для промышленной эксплуатации.</li>
+  <li><strong>USB-камера или встроенная камера ноутбука</strong> — для разработки и тестирования без IP-камеры.</li>
+</ul>
   </div>
 </div>
 
@@ -373,8 +377,10 @@ POSTGRES_PASSWORD=change_me_strong_password
 POSTGRES_PORT=5432
 
 # Camera
+VIDEO_SOURCE=rtsp           # rtsp (IP-камера) или v4l2 (USB/встроенная)
 CAMERA_NAME=main_entrance
 CAMERA_RTSP_URL=rtsp://user:password@CAMERA_IP:554/stream1
+CAMERA_DEVICE=/dev/video0   # для режима v4l2
 
 # CompreFace
 COMPREFACE_HOST=compreface
@@ -553,15 +559,29 @@ server {
 
 <!-- 12 -->
 <div class="section" id="s12">
-<h2><span class="step-num">12</span> Проверить доступность камеры</h2>
+<h2><span class="step-num">12</span> Проверить доступность видеоисточника</h2>
 
+<h3>Режим RTSP (IP-камера)</h3>
 <div class="code-block">ping CAMERA_IP<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
-
 <div class="code-block">nc -vz CAMERA_IP 554<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
-
 <div class="code-block">ffprobe "rtsp://user:password@CAMERA_IP:554/stream1"<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
-
 <div class="note">RTSP-path может отличаться в зависимости от модели камеры. Проверьте документацию.</div>
+
+<h3>Режим V4L2 (USB / встроенная камера)</h3>
+<div class="code-label">Проверить список видеоустройств</div>
+<div class="code-block">ls -la /dev/video*<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить параметры камеры</div>
+<div class="code-block">v4l2-ctl --list-devices<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+<div class="code-block">v4l2-ctl --device=/dev/video0 --list-formats-ext<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Если v4l2-ctl не установлен</div>
+<div class="code-block">sudo apt install -y v4l-utils<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить захват тестового кадра</div>
+<div class="code-block">ffmpeg -f v4l2 -i /dev/video0 -frames 1 -y /tmp/test-capture.jpg && ls -la /tmp/test-capture.jpg<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note warn"><strong>Для ноутбука:</strong> встроенная камера обычно доступна как <code>/dev/video0</code>. Если используется удалённый сервер без монитора, USB-камера должна быть физически подключена и определена ядром.</div>
 </div>
 
 <!-- 13 -->
@@ -574,6 +594,7 @@ server {
   <li>API-ключ хранится в <code>.env</code></li>
   <li>данные сохраняются в <code>compreface-data/</code></li>
   <li><code>NUM_THREADS</code> выставляется в 48–52 через <code>.env</code></li>
+  <li>если используется USB-камера — Stream Handler получает видеопоток через V4L2 вместо RTSP</li>
 </ul>
 </div>
 
@@ -593,7 +614,8 @@ server {
 <label><input type="checkbox"> Созданы runtime-директории</label>
 <label><input type="checkbox"> Созданы самоподписанные сертификаты</label>
 <label><input type="checkbox"> Подготовлена Nginx-конфигурация</label>
-<label><input type="checkbox"> Камера доступна по сети (ping + ffprobe)</label>
+<label><input type="checkbox"> Камера доступна: ping + ffprobe (RTSP) ИЛИ /dev/video* (V4L2)</label>
+<label><input type="checkbox"> USB-камера проверена через v4l2-ctl и ffmpeg (если используется V4L2)</label>
 <label><input type="checkbox"> Не публикуются наружу PostgreSQL / CompreFace / internal API</label>
 </div>
 
