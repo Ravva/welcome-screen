@@ -25,10 +25,10 @@
 
 ## Контроль изменений
 
-- last_checked_commit: `cfbe2f5`
+- last_checked_commit: `6c7bd3c`
 - Последний проверенный git commit до инициализации Memory Bank: `f1e7235`.
 - Сравнение `git log f1e7235.. --oneline` перед правками: новых коммитов не было.
-- Memory Bank и `docs/README.md` синхронизированы с коммитом `cfbe2f5`.
+- Memory Bank и `docs/README.md` синхронизированы с коммитом `6c7bd3c`.
 
 ## Changelog
 
