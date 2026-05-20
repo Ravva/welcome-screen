@@ -12,6 +12,7 @@
 - Инициализирован Memory Bank.
 - Создан `docs/README.md` как источник архитектурной правды.
 - Создан `Project Deliverables` с суммой Weight ровно 100.
+- Создана HTML-инструкция `docs/server-setup.html` с кнопками копирования команд.
 
 ## Known Issues / Open Questions
 
@@ -25,10 +26,8 @@
 
 ## Контроль изменений
 
-- last_checked_commit: `6c7bd3c`
+- last_checked_commit: будет обновлён после коммита
 - Последний проверенный git commit до инициализации Memory Bank: `f1e7235`.
-- Сравнение `git log f1e7235.. --oneline` перед правками: новых коммитов не было.
-- Memory Bank и `docs/README.md` синхронизированы с коммитом `6c7bd3c`.
 
 ## Changelog
 
@@ -41,3 +40,4 @@
 - В `memory_bank/projectbrief.md` добавлен обязательный раздел `## Project Deliverables`.
 - Выполнена арифметическая самопроверка Weight: сумма равна 100.
 - Обновлён `last_checked_commit` после коммита инициализации Memory Bank.
+- Создана HTML-инструкция `docs/server-setup.html` с копированием команд одним кликом.

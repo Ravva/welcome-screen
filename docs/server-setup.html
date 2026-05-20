@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome Screen — Настройка серверной части</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #1f6feb;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --code-bg: #1c2128;
+    --copy-bg: #30363d;
+    --copy-hover: #3d444d;
+    --header-bg: #161b22;
+    --max-width: 860px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #ffffff;
+      --surface: #f6f8fa;
+      --surface2: #eaeef2;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --text2: #656d76;
+      --accent: #0969da;
+      --accent2: #0969da;
+      --green: #1a7f37;
+      --red: #cf222e;
+      --orange: #9a6700;
+      --code-bg: #f6f8fa;
+      --copy-bg: #d0d7de;
+      --copy-hover: #b3bcc6;
+      --header-bg: #f6f8fa;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: var(--max-width); margin: 0 auto; padding: 0 20px; }
+
+  /* Header */
+  .header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 0 20px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header h1 { font-size: 22px; font-weight: 600; }
+  .header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 14px;
+  }
+  .toc-title { font-weight: 600; margin-bottom: 8px; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; font-size: 12px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 3px 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Sections */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 24px 20px;
+    margin: 20px 0;
+  }
+  .section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+  }
+  .section p { margin: 8px 0; color: var(--text); }
+  .section ul, .section ol { padding-left: 20px; margin: 8px 0; }
+  .section li { margin: 4px 0; }
+
+  /* Code blocks */
+  .code-block {
+    position: relative;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 12px 0;
+    padding: 14px 14px 14px 16px;
+    overflow-x: auto;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .code-block .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--copy-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text2);
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s, background .15s;
+  }
+  .code-block:hover .copy-btn { opacity: 1; }
+  .code-block .copy-btn:hover { background: var(--copy-hover); color: var(--text); }
+  .code-block .copy-btn.copied { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* Code block label */
+  .code-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+
+  /* Inline code */
+  code:not(.code-block *) {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+  }
+
+  /* Checkboxes */
+  .checklist label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+  .checklist input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
+
+  /* Notes */
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--surface2);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .note.warn { border-left-color: var(--orange); }
+  .note.danger { border-left-color: var(--red); }
+  .note.ok { border-left-color: var(--green); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* Step number */
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--accent2);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  .section h2 .step-num { vertical-align: middle; }
+
+  @media (max-width: 600px) {
+    .section { padding: 16px; }
+    .header h1 { font-size: 18px; }
+    .code-block { font-size: 12px; padding: 12px; }
+    .code-block .copy-btn { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="container">
+    <h1>🔐 Welcome Screen — настройка серверной части</h1>
+    <p>Пошаговая инструкция для Ubuntu Server 22.04 / 24.04 LTS</p>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Содержание</div>
+  <ol>
+    <li><a href="#s1">Подготовить сервер</a></li>
+    <li><a href="#s2">Создать пользователя проекта</a></li>
+    <li><a href="#s3">Установить Docker Engine</a></li>
+    <li><a href="#s4">Настроить firewall</a></li>
+    <li><a href="#s5">Клонировать репозиторий</a></li>
+    <li><a href="#s6">Подготовить runtime-директории</a></li>
+    <li><a href="#s7">Создать .env</a></li>
+    <li><a href="#s8">Настроить локальное имя сервера</a></li>
+    <li><a href="#s9">Создать TLS-сертификат</a></li>
+    <li><a href="#s10">Установить сертификат как доверенный</a></li>
+    <li><a href="#s11">Подготовить Nginx-конфигурацию</a></li>
+    <li><a href="#s12">Проверить доступность камеры</a></li>
+    <li><a href="#s13">CompreFace</a></li>
+    <li><a href="#s14">Чек-лист готовности</a></li>
+    <li><a href="#s15">Запуск и диагностика</a></li>
+    <li><a href="#s16">Эксплуатация</a></li>
+  </ol>
+</div>
+
+<!-- 1 -->
+<div class="section" id="s1">
+<h2><span class="step-num">1</span> Подготовить сервер</h2>
+<p>Подключиться к серверу по SSH, обновить пакеты, установить базовый набор утилит.</p>
+
+<div class="code-label">Подключиться</div>
+<div class="code-block">ssh user@SERVER_IP<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Обновить пакеты</div>
+<div class="code-block">sudo apt update && sudo apt upgrade -y<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Установить базовые утилиты</div>
+<div class="code-block">sudo apt install -y ca-certificates curl gnupg lsb-release git unzip htop nano openssl netcat-openbsd ffmpeg ufw<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить версию Ubuntu</div>
+<div class="code-block">lsb_release -a<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+</div>
+
+<!-- 2 -->
+<div class="section" id="s2">
+<h2><span class="step-num">2</span> Создать системного пользователя проекта</h2>
+<p>Опционально. Если будете работать от текущего пользователя — пропустите.</p>
+
+<div class="code-block">sudo adduser welcome && sudo usermod -aG sudo welcome && su - welcome<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+</div>
+
+<!-- 3 -->
+<div class="section" id="s3">
+<h2><span class="step-num">3</span> Установить Docker Engine</h2>
+
+<div class="code-label">Удалить старые версии (если есть)</div>
+<div class="code-block">sudo apt remove -y docker docker-engine docker.io containerd runc<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Добавить Docker GPG-ключ</div>
+<div class="code-block">sudo install -m 0755 -d /etc/apt/keyrings && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && sudo chmod a+r /etc/apt/keyrings/docker.gpg<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Добавить Docker repository</div>
+<div class="code-block">echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Установить Docker Engine</div>
+<div class="code-block">sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить версии</div>
+<div class="code-block">docker --version && docker compose version<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Добавить пользователя в группу docker</div>
+<div class="code-block">sudo usermod -aG docker $USER && newgrp docker<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить запуск без sudo</div>
+<div class="code-block">docker run hello-world<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+</div>
+
+<!-- 4 -->
+<div class="section" id="s4">
+<h2><span class="step-num">4</span> Настроить firewall</h2>
+
+<div class="code-block">sudo ufw allow OpenSSH && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp && sudo ufw enable<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить статус</div>
+<div class="code-block">sudo ufw status verbose<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note">Порты PostgreSQL, CompreFace и внутренних сервисов наружу открывать не нужно.</div>
+</div>
+
+<!-- 5 -->
+<div class="section" id="s5">
+<h2><span class="step-num">5</span> Клонировать репозиторий</h2>
+
+<div class="code-block">sudo mkdir -p /opt/welcome-screen && sudo chown -R $USER:$USER /opt/welcome-screen<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-block">cd /opt && git clone https://github.com/Ravva/welcome-screen.git && cd /opt/welcome-screen<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить статус</div>
+<div class="code-block">git status && ls -la<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+</div>
+
+<!-- 6 -->
+<div class="section" id="s6">
+<h2><span class="step-num">6</span> Подготовить runtime-директории</h2>
+
+<div class="code-block">mkdir -p docker-data postgres-data compreface-data uploads media snapshots logs certs secrets<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-block">chmod 700 secrets && chmod 700 certs<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:13px;">
+  <thead>
+    <tr style="background:var(--surface2);">
+      <th style="border:1px solid var(--border); padding:6px 10px; text-align:left;">Директория</th>
+      <th style="border:1px solid var(--border); padding:6px 10px; text-align:left;">Назначение</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>postgres-data/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">данные PostgreSQL</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>compreface-data/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">данные CompreFace</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>uploads/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">загружаемые фото сотрудников</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>media/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">публичные медиа-файлы</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>snapshots/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">снимки событий / неизвестных лиц</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>logs/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">технические логи</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>certs/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">TLS-сертификаты</td></tr>
+    <tr><td style="border:1px solid var(--border);padding:6px 10px;"><code>secrets/</code></td><td style="border:1px solid var(--border);padding:6px 10px;">локальные секреты</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 7 -->
+<div class="section" id="s7">
+<h2><span class="step-num">7</span> Создать <code>.env</code></h2>
+
+<div class="code-block">nano .env<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<p>Пример содержимого:</p>
+
+<div class="code-block"># Project
+PROJECT_NAME=welcome-screen
+APP_ENV=production
+APP_HOST=welcome-screen.local
+
+# Timezone
+TZ=Asia/Almaty
+
+# Backend
+BACKEND_PORT=3000
+JWT_SECRET=change_me_to_long_random_secret
+ANTI_FLOOD_SECONDS=60
+DEFAULT_SIMILARITY_THRESHOLD=0.82
+
+# PostgreSQL
+POSTGRES_DB=welcome_screen
+POSTGRES_USER=welcome_user
+POSTGRES_PASSWORD=change_me_strong_password
+POSTGRES_PORT=5432
+
+# Camera
+CAMERA_NAME=main_entrance
+CAMERA_RTSP_URL=rtsp://user:password@CAMERA_IP:554/stream1
+
+# CompreFace
+COMPREFACE_HOST=compreface
+COMPREFACE_PORT=8000
+COMPREFACE_API_KEY=change_me_after_compreface_setup
+COMPREFACE_NUM_THREADS=48
+
+# Nginx
+NGINX_HTTP_PORT=80
+NGINX_HTTPS_PORT=443<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Сгенерировать JWT-секрет</div>
+<div class="code-block">openssl rand -hex 32<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Сгенерировать пароль PostgreSQL</div>
+<div class="code-block">openssl rand -base64 32<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Ограничить права на .env</div>
+<div class="code-block">chmod 600 .env<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note danger"><strong>Важно:</strong> <code>.env</code> уже исключён из git через <code>.gitignore</code>. Не коммитьте его.</div>
+</div>
+
+<!-- 8 -->
+<div class="section" id="s8">
+<h2><span class="step-num">8</span> Настроить локальное имя сервера</h2>
+
+<p>Рекомендуемое имя: <code>welcome-screen.local</code>. Добавить в <code>/etc/hosts</code>:</p>
+
+<div class="code-block">sudo nano /etc/hosts<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<p>Добавить строку:</p>
+
+<div class="code-block">192.168.1.50 welcome-screen.local<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note">IP-адрес заменить на реальный адрес сервера. Добавить это же имя на рабочих компьютерах администратора и ТВ-устройстве.</div>
+</div>
+
+<!-- 9 -->
+<div class="section" id="s9">
+<h2><span class="step-num">9</span> Создать самоподписанный TLS-сертификат</h2>
+
+<div class="code-label">OpenSSL-config</div>
+<div class="code-block">nano certs/welcome-screen-openssl.cnf<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<p>Содержимое:</p>
+
+<div class="code-block">[req]
+default_bits = 4096
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = v3_req
+
+[dn]
+C = KZ
+ST = Local
+L = Local
+O = Welcome Screen
+OU = Internal
+CN = welcome-screen.local
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = welcome-screen.local
+IP.1 = 192.168.1.50<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Сгенерировать сертификат</div>
+<div class="code-block">openssl req -x509 -nodes -days 825 -newkey rsa:4096 -keyout certs/welcome-screen.key -out certs/welcome-screen.crt -config certs/welcome-screen-openssl.cnf<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-block">chmod 600 certs/welcome-screen.key && chmod 644 certs/welcome-screen.crt<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить сертификат</div>
+<div class="code-block">openssl x509 -in certs/welcome-screen.crt -text -noout | grep -E "Subject:|Issuer:|Not Before|Not After|DNS:"<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+</div>
+
+<!-- 10 -->
+<div class="section" id="s10">
+<h2><span class="step-num">10</span> Установить сертификат как доверенный</h2>
+
+<h3>На Ubuntu-клиенте</h3>
+<div class="code-block">sudo cp certs/welcome-screen.crt /usr/local/share/ca-certificates/welcome-screen.crt && sudo update-ca-certificates<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<h3>На Windows-клиенте</h3>
+<p>Скопировать <code>welcome-screen.crt</code> на Windows-машину, затем:</p>
+<ol>
+  <li>Открыть <code>mmc</code></li>
+  <li>Добавить snap-in <code>Certificates</code> → <code>Computer account</code></li>
+  <li>Импортировать сертификат в <code>Trusted Root Certification Authorities</code></li>
+</ol>
+
+<h3>На ТВ-устройстве</h3>
+<div class="note">Зависит от модели. Практичное решение — использовать мини-ПК / Android box / Chromebox и открыть ТВ-фронтенд в браузере Chrome, где можно импортировать сертификат.</div>
+</div>
+
+<!-- 11 -->
+<div class="section" id="s11">
+<h2><span class="step-num">11</span> Подготовить Nginx-конфигурацию</h2>
+
+<div class="code-block">mkdir -p nginx/conf.d && nano nginx/conf.d/welcome-screen.conf<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<p>Содержимое:</p>
+
+<div class="code-block">server {
+    listen 80;
+    server_name welcome-screen.local;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name welcome-screen.local;
+
+    ssl_certificate /etc/nginx/certs/welcome-screen.crt;
+    ssl_certificate_key /etc/nginx/certs/welcome-screen.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+
+    client_max_body_size 20M;
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    location /api/ {
+        proxy_pass http://backend-api:3000/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /health {
+        proxy_pass http://backend-api:3000/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /ws/ {
+        proxy_pass http://backend-api:3000/ws/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+
+    location /admin/ {
+        proxy_pass http://admin-frontend:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://tv-frontend:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+</div>
+
+<!-- 12 -->
+<div class="section" id="s12">
+<h2><span class="step-num">12</span> Проверить доступность камеры</h2>
+
+<div class="code-block">ping CAMERA_IP<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-block">nc -vz CAMERA_IP 554<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-block">ffprobe "rtsp://user:password@CAMERA_IP:554/stream1"<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note">RTSP-path может отличаться в зависимости от модели камеры. Проверьте документацию.</div>
+</div>
+
+<!-- 13 -->
+<div class="section" id="s13">
+<h2><span class="step-num">13</span> CompreFace</h2>
+<p>Будет развёрнут как часть Docker-контура проекта. Основные требования:</p>
+<ul>
+  <li>backend и Stream Handler видят CompreFace по внутреннему DNS Docker-сети</li>
+  <li>порты CompreFace не публикуются наружу</li>
+  <li>API-ключ хранится в <code>.env</code></li>
+  <li>данные сохраняются в <code>compreface-data/</code></li>
+  <li><code>NUM_THREADS</code> выставляется в 48–52 через <code>.env</code></li>
+</ul>
+</div>
+
+<!-- 14 -->
+<div class="section checklist" id="s14">
+<h2><span class="step-num">14</span> Чек-лист готовности сервера</h2>
+
+<label><input type="checkbox"> Ubuntu 22.04 / 24.04 LTS установлена</label>
+<label><input type="checkbox"> Сервер имеет статический IP</label>
+<label><input type="checkbox"> SSH работает</label>
+<label><input type="checkbox"> Docker Engine установлен</label>
+<label><input type="checkbox"> docker compose работает</label>
+<label><input type="checkbox"> Пользователь в группе docker</label>
+<label><input type="checkbox"> UFW разрешает 22, 80, 443</label>
+<label><input type="checkbox"> Репозиторий склонирован в /opt/welcome-screen</label>
+<label><input type="checkbox"> Создан .env</label>
+<label><input type="checkbox"> Созданы runtime-директории</label>
+<label><input type="checkbox"> Созданы самоподписанные сертификаты</label>
+<label><input type="checkbox"> Подготовлена Nginx-конфигурация</label>
+<label><input type="checkbox"> Камера доступна по сети (ping + ffprobe)</label>
+<label><input type="checkbox"> Не публикуются наружу PostgreSQL / CompreFace / internal API</label>
+</div>
+
+<!-- 15 -->
+<div class="section" id="s15">
+<h2><span class="step-num">15</span> Запуск и диагностика</h2>
+
+<p>После добавления <code>docker-compose.yml</code> в репозиторий:</p>
+
+<div class="code-block">cd /opt/welcome-screen && git pull<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-block">docker compose up -d<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить контейнеры</div>
+<div class="code-block">docker compose ps<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Посмотреть логи всех сервисов</div>
+<div class="code-block">docker compose logs -f<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Логи конкретного сервиса</div>
+<div class="code-block">docker compose logs -f backend-api<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="code-label">Проверить /health</div>
+<div class="code-block">curl -k https://welcome-screen.local/health<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note ok">Ожидаемый ответ /health:
+<pre style="margin-top:6px;">
+{
+  "status": "ok",
+  "version": "1.0.0",
+  "services": {
+    "postgres": "ok",
+    "compreface": "ok",
+    "streamHandler": "ok",
+    "rtspCamera": "ok",
+    "websocket": "ok",
+    "storage": "ok"
+  }
+}
+</pre>
+</div>
+</div>
+
+<!-- 16 -->
+<div class="section" id="s16">
+<h2><span class="step-num">16</span> Эксплуатация</h2>
+
+<h3>Обновить проект и перезапустить</h3>
+<div class="code-block">cd /opt/welcome-screen && git pull && docker compose pull && docker compose up -d --build<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<h3>Перезапустить сервисы</h3>
+<div class="code-block">docker compose restart<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<h3>Остановить</h3>
+<div class="code-block">docker compose down<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<h3>Мониторинг ресурсов</h3>
+<div class="code-block">docker stats<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+<div class="code-block">htop<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<h3>Резервное копирование</h3>
+<div class="code-block">cd /opt && tar -czf welcome-screen-backup-$(date +%F).tar.gz welcome-screen/.env welcome-screen/certs welcome-screen/nginx welcome-screen/postgres-data welcome-screen/compreface-data welcome-screen/uploads welcome-screen/media welcome-screen/snapshots<button class="copy-btn" onclick="copyCmd(this)">Копировать</button></div>
+
+<div class="note">Backup хранить вне основного сервера.</div>
+</div>
+
+<div class="footer">
+  <p>Welcome Screen &copy; 2026 &mdash; Документация проекта</p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+function copyCmd(btn) {
+  const block = btn.parentElement;
+  const text = block.textContent.replace('Копировать', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Скопировано';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Копировать';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Скопировано';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Копировать';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>

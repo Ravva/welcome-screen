@@ -2,16 +2,12 @@
 
 ## Current Focus
 
-Инициализация Memory Bank по актуальным правилам AGENTS.md из репозитория `Ravva/projects-tracker`.
+Проект находится на стадии документирования. PRD/ТЗ утверждён, Memory Bank инициализирован, подготовлена HTML-инструкция по настройке серверной части.
 
 ## Current Task
 
-- Скачан и сохранён актуальный `AGENTS.md`.
-- Создаётся обязательная структура `memory_bank`.
-- Проверяется наличие раздела `## Project Deliverables` в `memory_bank/projectbrief.md`.
-- Таблица deliverables должна иметь колонки `ID | Deliverable | Status | Weight` и сумму Weight ровно 100.
-- Обновляется `docs/README.md` как источник архитектурной правды.
-- После исправлений требуется commit и push всех файлов.
+- Завершена и сохранена пошаговая HTML-инструкция `docs/server-setup.html` с кнопками копирования команд.
+- Инструкция покрывает: подготовку Ubuntu, Docker, firewall, клонирование, .env, TLS-сертификат, Nginx, проверку камеры, запуск и эксплуатацию.
 
 ## Active Decisions
 
